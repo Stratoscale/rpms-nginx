@@ -1,0 +1,31 @@
+
+all: rpm
+
+
+VERSION=1.10.1
+
+deps:
+	-git clone --branch=f23 https://github.com/stratoscale/rpms-nginx ~/rpmbuild/SOURCES/
+
+	@echo "mv ~/rpmbuild/SOURCES/nginx.spec to ~/rpmbuild/SPECS/nginx.spec."
+	-mv ~/rpmbuild/SOURCES/nginx.spec ~/rpmbuild/SPECS/nginx.spec
+
+	@echo "RUNNING spectool on ~/rpmbuild/SPECS/nginx.spec"
+	spectool -g -R ~/rpmbuild/SPECS/nginx.spec
+	@echo "RUNNING builddep on ~/rpmbuild/SPECS/nginx.spec"
+	sudo dnf builddep ~/rpmbuild/SPECS/nginx.spec -y
+
+clean:
+	rm -f ~/rpmbuild/SPECS/nginx.spec
+	find ~/rpmbuild/SOURCES ! -name '.' ! -name '..' -delete
+	rm -rf ~/rpmbuild/BUILD/nginx-1.10.1
+	rm -rf ~/rpmbuild/BUILDROOT/nginx-1.10.1-1.fc23.x86_64
+	rm -rf /tmp/nginx-1.10.1
+
+submit:
+	@echo "Submitting to which ever repo we want."
+
+rpm: deps
+	@echo "RUNNING rpmbuild..."
+	rpmbuild -ba --target x86_64 ~/rpmbuild/SPECS/nginx.spec
+	cp -r ~/rpmbuild/BUILD/* ${HOME}/output
