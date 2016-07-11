@@ -1,6 +1,8 @@
 
 all: rpm
 
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
 
 VERSION=1.10.1
 
@@ -18,14 +20,14 @@ deps:
 clean:
 	rm -f ~/rpmbuild/SPECS/nginx.spec
 	find ~/rpmbuild/SOURCES ! -name '.' ! -name '..' -delete
-	rm -rf ~/rpmbuild/BUILD/nginx-1.10.1
-	rm -rf ~/rpmbuild/BUILDROOT/nginx-1.10.1-1.fc23.x86_64
-	rm -rf /tmp/nginx-1.10.1
+	rm -rf ~/rpmbuild/BUILD/nginx-${VERSION}
+	rm -rf ~/rpmbuild/BUILDROOT/nginx-${VERSION}-1.fc23.x86_64
+	rm -rf /tmp/nginx-${VERSION}
 
 submit:
-	@echo "Submitting to which ever repo we want."
+	strato_osmosis_client submit -p rpms -b rpms-nginx -q clean -s ~/rpmbuild/RPMS/ -a=10.47.238.8:8080
 
 rpm: deps
 	@echo "RUNNING rpmbuild..."
 	rpmbuild -ba --target x86_64 ~/rpmbuild/SPECS/nginx.spec
-	cp -r ~/rpmbuild/BUILD/* ${HOME}/output
+	cp -r ~/rpmbuild/RPMS/* ${HOME}/output
