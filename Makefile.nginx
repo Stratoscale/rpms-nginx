@@ -1,13 +1,8 @@
 
 all: rpm
 
-mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-current_dir := $(notdir $(patsubst %/,%,$(dir $(mkfile_path))))
-
-VERSION=1.10.1
-
 deps:
-	-git clone --branch=f23 https://github.com/stratoscale/rpms-nginx ~/rpmbuild/SOURCES/
+	-git clone --branch=yogev/add-build-scripts https://github.com/stratoscale/rpms-nginx ~/rpmbuild/SOURCES/
 
 	@echo "mv ~/rpmbuild/SOURCES/nginx.spec to ~/rpmbuild/SPECS/nginx.spec."
 	-mv ~/rpmbuild/SOURCES/nginx.spec ~/rpmbuild/SPECS/nginx.spec
@@ -20,14 +15,14 @@ deps:
 clean:
 	rm -f ~/rpmbuild/SPECS/nginx.spec
 	find ~/rpmbuild/SOURCES ! -name '.' ! -name '..' -delete
-	rm -rf ~/rpmbuild/BUILD/nginx-${VERSION}
-	rm -rf ~/rpmbuild/BUILDROOT/nginx-${VERSION}-1.fc23.x86_64
-	rm -rf /tmp/nginx-${VERSION}
+	rm -rf ~/rpmbuild/BUILD/*
+	rm -rf ~/rpmbuild/BUILDROOT/*
+
+publish: submit
 
 submit:
-	strato_osmosis_client submit -p rpms -b rpms-nginx -q clean -s ~/rpmbuild/RPMS/ -a=10.47.238.8:8080
+	strato_osmosis_client submit -p rpms -b rpms-nginx -q clean -s ~/rpmbuild/RPMS/ -a=osmosis-http.dc1:8080
 
 rpm: deps
 	@echo "RUNNING rpmbuild..."
 	rpmbuild -ba --target x86_64 ~/rpmbuild/SPECS/nginx.spec
-	cp -r ~/rpmbuild/RPMS/* ${HOME}/output
